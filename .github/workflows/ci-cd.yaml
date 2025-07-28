@@ -30,12 +30,13 @@ jobs:
     - name: Build Docker Image
       run: docker build -t flask-cicd-app .
 
-    # Optional: Push to DockerHub
-    # - name: Docker Login
-    #   run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+    - name: Docker Login
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    # - name: Push Docker Image
-    #   run: docker tag flask-cicd-app yourdockerhub/flask-cicd-app && docker push yourdockerhub/flask-cicd-app
+    - name: Push Docker Image
+      run: |
+        docker tag flask-cicd-app pushpender123/flask-cicd-app:latest
+        docker push pushpender123/flask-cicd-app:latest
 
     # --- NEW DEPLOYMENT STEP ---
     - name: Deploy to EC2 via SSH
@@ -45,10 +46,7 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
         script: |
-          cd Flask-app
-          git pull
-
-          # Kill any process using port 5000 (safe if nothing running)
+          # Kill any process using port 5000 
           sudo fuser -k 5000/tcp || true
 
           # Stop and remove any container using port 5000
@@ -58,5 +56,5 @@ jobs:
             docker rm $CONTAINER_ID || true
           fi
 
-          docker build -t flask-cicd-app .
-          docker run -d -p 5000:5000 --name flask-cicd-app flask-cicd-app
+          docker pull pushpender123/flask-cicd-app:latest
+          docker run -d -p 5000:5000 --name flask-cicd-app pushpender123/flask-cicd-app:latest
