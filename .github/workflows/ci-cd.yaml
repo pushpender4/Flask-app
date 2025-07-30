@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,7 +25,15 @@ jobs:
     - name: Run Simple Test
       run: |
         echo "Running Tests..."
-        curl -s http://localhost:5000 || echo "Test simulated"  # Replace with real tests if needed
+        curl -s http://localhost:5000 || echo "Test simulated"
+
+    - name: Set up image tag
+      id: vars
+      run: |
+        SHA=${{ github.sha }}
+        BRANCH=${{ github.ref_name }}
+        IMAGE_TAG="$BRANCH-${SHA::7}"
+        echo "tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
     - name: Build Docker Image
       run: docker build -t flask-cicd-app .
@@ -33,12 +41,24 @@ jobs:
     - name: Docker Login
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
+    - name: Tag previous image (if exists)
+      run: |
+        docker pull pushpender123/flask-cicd-app:latest || true
+        docker tag pushpender123/flask-cicd-app:latest pushpender123/flask-cicd-app:previous
+        docker push pushpender123/flask-cicd-app:previous
+
     - name: Push Docker Image
       run: |
+        docker tag flask-cicd-app pushpender123/flask-cicd-app:${{ steps.vars.outputs.tag }}
         docker tag flask-cicd-app pushpender123/flask-cicd-app:latest
+        docker push pushpender123/flask-cicd-app:${{ steps.vars.outputs.tag }}
         docker push pushpender123/flask-cicd-app:latest
 
-    # --- NEW DEPLOYMENT STEP ---
+  cd:
+    needs: ci
+    runs-on: ubuntu-latest
+
+    steps:
     - name: Deploy to EC2 via SSH
       uses: appleboy/ssh-action@v1.0.0
       with:
@@ -56,5 +76,6 @@ jobs:
             docker rm $CONTAINER_ID || true
           fi
 
+          # Pull and run the latest image
           docker pull pushpender123/flask-cicd-app:latest
           docker run -d -p 5000:5000 --name flask-cicd-app pushpender123/flask-cicd-app:latest
