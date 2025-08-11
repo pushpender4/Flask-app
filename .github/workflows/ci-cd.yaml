@@ -65,11 +65,14 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
         script: |
+          
+          /home/ubuntu/deploy_flask.sh
+
           # Kill any process using port 5000 
           sudo fuser -k 5000/tcp || true
 
-          # Stop and remove any container using port 5000
-          CONTAINER_ID=$(docker ps -q --filter "publish=5000")
+          # Stop and remove existing container with same name
+          CONTAINER_ID=$(docker ps -aq --filter "name=^flask-cicd-app$")
           if [ -n "$CONTAINER_ID" ]; then
             docker stop $CONTAINER_ID || true
             docker rm $CONTAINER_ID || true
