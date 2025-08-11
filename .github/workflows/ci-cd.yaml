@@ -65,7 +65,6 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
         script: |
-          
           /home/ubuntu/deploy_flask.sh
 
           # Kill any process using port 5000 
