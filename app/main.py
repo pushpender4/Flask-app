@@ -4,8 +4,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return "Hello from Flask CI/CD, rollling image policy new"
-    
+    return "Hello from Flask CI/CD, rollling image policy new latest"
+
 @app.route('/health')
 def health():
     return "OK", 200
