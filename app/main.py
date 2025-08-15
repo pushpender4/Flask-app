@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return "Hello from Flask CI/CD, this is a healthy version to push to lkg v2"
+    return "Hello from Flask CI/CD, this is a healthy version to push to lkg v3"
 
 @app.route('/health')
 def health():
