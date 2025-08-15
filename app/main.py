@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello():
-    return "Hello from Flask CI/CD, this is a healthy version 11"
+    return "Hello from Flask CI/CD, this is a healthy version 12 failed"
 
 # @app.route('/health')
 # def health():
