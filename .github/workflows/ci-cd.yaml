@@ -68,5 +68,9 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_KEY }}
+        # Pass Docker credentials as environment variables
+        envs: DOCKER_USERNAME,DOCKER_PASSWORD
         script: |
+          export DOCKER_USERNAME="${{ secrets.DOCKER_USERNAME }}"
+          export DOCKER_PASSWORD="${{ secrets.DOCKER_PASSWORD }}"
           bash /home/ubuntu/deploy_flask.sh
