@@ -8,6 +8,7 @@ import json
 from threading import Lock
 
 app = Flask(__name__)
+app_healthy = True
 
 # Store deployment info and metrics
 deployment_info = {
@@ -410,9 +411,17 @@ def dashboard():
                                 deployment_info=deployment_info, 
                                 request_counter=request_counter)
 
+# change in deloyment script route from healthy to unhealthy just for testing rollback 
+@app.route('/unhealthy')
+def unhealthy():
+    return jsonify({"status": "FAIL", "timestamp": datetime.datetime.now().isoformat()}), 500
+
 @app.route('/health')
 def health():
-    return jsonify({"status": "OK", "timestamp": datetime.datetime.now().isoformat()}), 200
+    if app_healthy:
+        return jsonify({"status": "OK", "timestamp": datetime.datetime.now().isoformat()}), 200
+    else:
+        return jsonify({"status": "FAIL", "timestamp": datetime.datetime.now().isoformat()}), 500
 
 @app.route('/api/metrics')
 def metrics():
